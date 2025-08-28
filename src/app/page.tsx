@@ -1,9 +1,16 @@
-import {prisma} from "@/lib/db";
-const Page = async () => {
-  const users = await prisma.user.findMany();
+import {  getQueryClient, trpc } from '@/trpc/server';
+import Client from './client';
+import { Suspense } from 'react';
+
+
+const Page =  async () => {
+const queryClient = getQueryClient();
+ void queryClient.prefetchQuery(trpc.createAI.queryOptions({ text: "sandhani" }));
   return (
     <div className="flex items-center justify-center h-screen">
-      {JSON.stringify(users)}
+      <Suspense fallback={<div>Loading...</div>}>
+        <Client />
+      </Suspense>
     </div>
   );
 };
