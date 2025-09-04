@@ -1,16 +1,36 @@
-import {  getQueryClient, trpc } from '@/trpc/server';
-import Client from './client';
-import { Suspense } from 'react';
+"use client"
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { useTRPC } from "@/trpc/client";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 
-const Page =  async () => {
-const queryClient = getQueryClient();
- void queryClient.prefetchQuery(trpc.createAI.queryOptions({ text: "sandhani" }));
+const Page =  () => {
+  const trpc = useTRPC();
+  const [inputValue, setInputValue] = React.useState("");
+  const invoke = useMutation(trpc.invoke.mutationOptions({
+    onSuccess: () => {
+      toast.success("Background job invoked successfully!");
+    }
+  }));
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    invoke.mutate({ text: inputValue });
+  };
   return (
-    <div className="flex items-center justify-center h-screen">
-      <Suspense fallback={<div>Loading...</div>}>
-        <Client />
-      </Suspense>
+    <div className="p-4 max-w-7xl mx-auto">
+      <form onSubmit={handleSubmit} className="mb-4 flex gap-2">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={e => setInputValue(e.target.value)}
+          placeholder="Enter text"
+          className="border px-2 py-1 rounded"
+        />
+        <Button type="submit" disabled={invoke.isPending}>Submit</Button>
+      </form>
+      {/* <Button disabled={invoke.isPending} onClick={() => invoke.mutate({ text: "sandhani" })}>Invoke Background Job</Button> */}
     </div>
   );
 };
